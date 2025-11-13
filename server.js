@@ -30,12 +30,10 @@ app.post('/api/generate-intercom-jwt', (req, res) => {
       return res.status(400).json({ error: 'userId and email are required' });
     }
 
-    // Create JWT payload according to Intercom documentation
+    // Create JWT payload - ONLY user_id and email
     const payload = {
       user_id: userId.toString(),
-      email: email,
-      // Add optional attributes if needed
-      ...(name && { name: name })
+      email: email
     };
 
     console.log('JWT Payload:', payload);
@@ -46,17 +44,17 @@ app.post('/api/generate-intercom-jwt', (req, res) => {
       algorithm: 'HS256'
     });
 
-    console.log('Generated token:', token);
+    console.log('Generated token (first 30 chars):', token.substring(0, 30) + '...');
 
     // Send back all the data the client needs
     const responseData = {
-      jwtToken: token,  // Changed from 'jwt' to 'jwtToken' to match client
+      jwtToken: token,
       userId: userId.toString(),
       email: email,
       name: name
     };
 
-    console.log('Sending response:', responseData);
+    console.log('Sending response');
     
     res.json(responseData);
 
