@@ -2,7 +2,6 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
-
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -18,12 +17,16 @@ if (!INTERCOM_SECRET) {
 app.use(cors());
 app.use(express.json());
 
-//Endpoint to generate JWT token
+// Endpoint to generate JWT token
 app.post('/api/generate-intercom-jwt', (req, res) => {
+  console.log('=== Intercom JWT Endpoint Hit ===');
+  console.log('Request body:', req.body);
+  
   try {
     const { userId, email, name } = req.body;
 
     if (!userId || !email) {
+      console.log('Missing userId or email');
       return res.status(400).json({ error: 'userId and email are required' });
     }
 
@@ -35,21 +38,31 @@ app.post('/api/generate-intercom-jwt', (req, res) => {
       ...(name && { name: name })
     };
 
-    // Sign the JWT token with 1 hour expiration
-    const token = jwt.sign(payload, INTERCOM_SECRET, { expiresIn: '1h' });
+    console.log('JWT Payload:', payload);
 
-    res.json({ jwt: token });
+    // Sign the JWT token with 1 hour expiration
+    const token = jwt.sign(payload, INTERCOM_SECRET, { 
+      expiresIn: '1h',
+      algorithm: 'HS256'
+    });
+
+    console.log('Generated token:', token);
+
+    // Send back all the data the client needs
+    const responseData = {
+      jwtToken: token,  // Changed from 'jwt' to 'jwtToken' to match client
+      userId: userId.toString(),
+      email: email,
+      name: name
+    };
+
+    console.log('Sending response:', responseData);
+    
+    res.json(responseData);
+
   } catch (error) {
     console.error('Error generating JWT:', error);
-    res.status(500).json({ error: 'Failed to generate JWT token' });
-  }
-}); 
-
-
-
-  } catch (error) {
-    console.error('Error generating Intercom hash:', error);
-    res.status(500).json({ error: 'Failed to generate user hash' });
+    res.status(500).json({ error: 'Failed to generate JWT token', details: error.message });
   }
 });
 
