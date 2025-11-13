@@ -49,7 +49,17 @@ app.post('/api/generate-intercom-jwt', (req, res) => {
 app.get('/health', (req, res) => {
   res.json({ status: 'OK' });
 });
-
+//Test route to debug
+app.get('/test', (req, res) => {
+  res.json({ 
+    message: 'Backend is working!',
+    routes: [
+      'GET /health',
+      'GET /test', 
+      'POST /api/generate-intercom-jwt'
+    ]
+  });
+});
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
