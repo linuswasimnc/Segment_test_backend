@@ -1,3 +1,4 @@
+// server.js
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
@@ -5,6 +6,7 @@ const cors = require('cors');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Get secret from environment variable (set this in Render)
 const INTERCOM_SECRET = process.env.INTERCOM_SECRET;
 
 if (!INTERCOM_SECRET) {
@@ -12,19 +14,11 @@ if (!INTERCOM_SECRET) {
   process.exit(1);
 }
 
-// UPDATED CORS CONFIGURATION
-app.use(cors({
-  origin: [
-    'https://linuswasimnc.github.io/Segment_test/',  // Replace with your actual GitHub Pages URL
-    'http://localhost:3000',  // For local testing
-    'http://127.0.0.1:3000'   // For local testing
-  ],
-  methods: ['GET', 'POST'],
-  credentials: true
-}));
-
+// Middleware
+app.use(cors());
 app.use(express.json());
 
+// Endpoint to generate JWT token
 app.post('/api/generate-intercom-jwt', (req, res) => {
   try {
     const { userId, email, name } = req.body;
@@ -33,12 +27,15 @@ app.post('/api/generate-intercom-jwt', (req, res) => {
       return res.status(400).json({ error: 'userId and email are required' });
     }
 
+    // Create JWT payload according to Intercom documentation
     const payload = {
       user_id: userId,
       email: email,
+      // Add optional attributes if needed
       ...(name && { name: name })
     };
 
+    // Sign the JWT token with 1 hour expiration
     const token = jwt.sign(payload, INTERCOM_SECRET, { expiresIn: '1h' });
 
     res.json({ jwt: token });
@@ -48,19 +45,9 @@ app.post('/api/generate-intercom-jwt', (req, res) => {
   }
 });
 
+// Health check endpoint
 app.get('/health', (req, res) => {
   res.json({ status: 'OK' });
-});
-
-app.get('/test', (req, res) => {
-  res.json({ 
-    message: 'Backend is working!',
-    routes: [
-      'GET /health',
-      'GET /test', 
-      'POST /api/generate-intercom-jwt'
-    ]
-  });
 });
 
 app.listen(PORT, () => {
