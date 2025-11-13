@@ -18,7 +18,7 @@ if (!INTERCOM_SECRET) {
 app.use(cors());
 app.use(express.json());
 
-/* Endpoint to generate JWT token
+//Endpoint to generate JWT token
 app.post('/api/generate-intercom-jwt', (req, res) => {
   try {
     const { userId, email, name } = req.body;
@@ -29,7 +29,7 @@ app.post('/api/generate-intercom-jwt', (req, res) => {
 
     // Create JWT payload according to Intercom documentation
     const payload = {
-      user_id: userId,
+      user_id: userId.toString(),
       email: email,
       // Add optional attributes if needed
       ...(name && { name: name })
@@ -43,29 +43,9 @@ app.post('/api/generate-intercom-jwt', (req, res) => {
     console.error('Error generating JWT:', error);
     res.status(500).json({ error: 'Failed to generate JWT token' });
   }
-});*/ 
+}); 
 
-// Endpoint to generate Intercom user hash
-app.post('/api/generate-intercom-jwt', (req, res) => {
-  try {
-    const { userId, email, name } = req.body;
 
-    if (!userId || !email) {
-      return res.status(400).json({ error: 'userId and email are required' });
-    }
-
-    // Generate HMAC-SHA256 hash for Identity Verification
-    const userHash = crypto
-      .createHmac('sha256', INTERCOM_SECRET)
-      .update(userId.toString())
-      .digest('hex');
-
-    res.json({ 
-      userHash: userHash,
-      userId: userId,
-      email: email,
-      name: name 
-    });
 
   } catch (error) {
     console.error('Error generating Intercom hash:', error);
